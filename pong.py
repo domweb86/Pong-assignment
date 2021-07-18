@@ -9,7 +9,6 @@
 # The policy learner used here is a fully connected neural network.
 
 ####
-# HOST ON GITHUB
 # Note: Could add a LASSO regularization: E = E = regularization_parameter* norm_1(weights), so that the objective partially becomes to minimize (and thus maybe even completely eliminate) the weights, which results in reduced network complexity, so risk of overfitting is reduced.
 # did biases or 250 nodes or baseline change affect rmsprop negatively?
 ####
