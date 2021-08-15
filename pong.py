@@ -1,18 +1,11 @@
 # Learning to play Pong with Reinforcement Learning (using a fully connected neural network)
+# Dominic Weber
 
 # The chosen method
 # -is model free
 # -is policy based (policy gradient method)
 # -is an on-policy method
 # -uses a stochastic policy (as opposed to a deterministic one)
-# More specifically, the REINFORCE algorithm is used here.
-# The policy learner used here is a fully connected neural network.
-
-####
-#GIT
-# Note: Could add a LASSO regularization: E = E = regularization_parameter* norm_1(weights), so that the objective partially becomes to minimize (and thus maybe even completely eliminate) the weights, which results in reduced network complexity, so risk of overfitting is reduced.
-# did biases or 250 nodes or baseline change affect rmsprop negatively?
-####
 
 # IMPORTS
 import numpy as np
@@ -21,18 +14,18 @@ import matplotlib.pyplot as plt
 
 # 3 LAYER NEURAL NETWORK STRUCTURE <-- SET VALUES FOR LAYER_2_NEURONS, OUTPUTS
 inputs = 6400  # 80 * 80 pixels (refer to 'preprocess' function for details)
-layer_2_neurons = 250 # 200
+layer_2_neurons = 250
 outputs = 3 # Note: Can only choose between 1, 2, and 3 outputs, as this part of the code is not written in a fully generalized way.
 
 # WEIGHT UPDATE (OPTIMIZER) AND WEIGHT INITIALIZATION DEFINITIONS <-- SET PARAMETERS
 batch_size = 10
-optimizer = 'momentum' # momentum, RMSprop, ADAM
-alpha = 1e-2 # learning rate (or step size). Note: As gradients were summed over batches and then divided by the batch size (i.e. gradients were averaged over the batches), the required learning rate is effectively dependent on the batch size.
+optimizer = 'ADAM' # momentum, RMSprop, ADAM
+alpha = 1e-2 # Learning rate (or step size): 1e-2 (for momentum and ADAM), 1e-3 (for RMSprop). Note: As gradients were summed over batches and then divided by the batch size (i.e. gradients were averaged over the batches), the required learning rate is effectively dependent on the batch size.
 decay_rate = 0.99
 decay_rate_1 = 0.9 # as per ADAM paper
 decay_rate_2 = 0.999 # as per ADAM paper
 epsilon = 1e-8 # To avoid division by zero
-momentum = 0.5 #0.9 # Typical values according to Goodfellow-Bengio-Courville are 0.5, 0.9, and 0.99
+momentum = 0.5 # Typical values according to Goodfellow-Bengio-Courville are 0.5, 0.9, and 0.99
 initialization = 4 # determines which initialization method to use (Note: Only methods 2 to 4 have been implemented, not method 1. Only method 4 has been tested.)
 
 # REINFORCEMENT LEARNING DEFINITIONS
@@ -140,7 +133,7 @@ def adam_optimization(m, i, decay_rate_1, RdEdw_dict_batch, decay_rate_2, v, epi
 # Data processing. Purpose: To reduce dimensionality for the purpose of reducing computational effort and reducing risk of overfitting.
 def preprocess(input_data):
     # Convert the input (210 x 160 pixels, each with 3 colours (uint8 (8 bit, i.e. 0 to 255)) to a float array, removing unnecessary data
-    # print('Input Data: ', type(input_data), input_data.shape, input_data.dtype)
+    # print('Input Data: ', type(input_data), input_data.shape, input_data.dtype, input_data)
     input_data = input_data[35:195:2,::2,0]  # crop irrelevant parts of image, only use every second pixel (every 4th or higher would be insufficient though to show the ball), leaving only a 80 x 80 pixel image, and use only 2 bits of the 8 bits of colour. Note: Indeces for cropping were taken from Karpathy's implementation but can be confirmed by printing the entire input_data array and checking where background values (see comments below) start to dominate).
     # with np.printoptions(threshold=np.inf):
     #     print(input_data) # this shows that the vast majority of pixels have a value of either 109 or 144, so this must be the background.
@@ -168,7 +161,6 @@ def forward_pass(x, w):
 
 def get_discounted_total_rewards(rewards_array, discount_factor):  # This discounts the further-in-the-future rewards more heavily than the closer ones, i.e. rewards received as an immediate result of the action taken have more weight
     discounted_total_rewards = np.zeros_like(rewards_array)
-    discounted_total_rewards_temp = 0
     for i in reversed(range(rewards_array.size)):
         if rewards_array[i,:] != 0:
             discounted_total_rewards[i,:] = rewards_array[i,:]
@@ -205,7 +197,7 @@ fig, axis = plt.subplots(3)
 # fig2, axis2 = plt.subplots(1)
 
 # MAIN LOOP OVER STATES
-while episode_number < 8001:
+while episode_number < 2501:
     environment.render()
 
     # FORWARD PASS
@@ -337,7 +329,6 @@ while episode_number < 8001:
                 RdEdw_dict_batch[i] /= batch_size
 
             # WEIGHTS UPDATE (OPTIMIZER)
-            # Optimizers that could be used here: Gradient ascent, gradient ascent with momentum, Nesterov Accelerated Gradient, ((Adagrad)), ((Adadelta)) or (RMSprop), Adam, ((Adamax)) or (Nadam) or (AMSgrad),...
             for i, j in iter(w.items()):
 
                 if optimizer == 'momentum':
